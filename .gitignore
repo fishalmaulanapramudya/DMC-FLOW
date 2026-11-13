@@ -1,0 +1,19 @@
+# Local secrets and environment
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+!frontend/.env.example
+frontend/.env.local
+frontend/.env.*.local
+
+# Dependencies and build output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+coverage/
+.DS_Store
+*.log

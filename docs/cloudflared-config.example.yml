@@ -1,0 +1,9 @@
+# Example only: replace the hostname with a domain configured for your tunnel.
+# Ensure FRONTEND_URL in backend/.env is set to the exact https origin.
+ingress:
+  - hostname: kantin.domain-sekolah.sch.id
+    path: /api/.*
+    service: http://127.0.0.1:8000
+  - hostname: kantin.domain-sekolah.sch.id
+    service: http://127.0.0.1:4173
+  - service: http_status:404

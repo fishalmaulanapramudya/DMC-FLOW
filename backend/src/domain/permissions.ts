@@ -1,0 +1,25 @@
+export const PERMISSIONS = [
+  { code: 'dashboard.view', label: 'Lihat dashboard', group: 'Dashboard', description: 'Melihat ringkasan usaha kantin.' },
+  { code: 'pos.access', label: 'Gunakan kasir / POS', group: 'Kasir', description: 'Scan SKU, mengelola keranjang, dan memproses pembayaran QR.' },
+  { code: 'shifts.open', label: 'Buka shift kasir', group: 'Kasir & shift', description: 'Membuka shift dengan modal kas awal yang tercatat.' },
+  { code: 'shifts.close', label: 'Tutup shift kasir', group: 'Kasir & shift', description: 'Menghitung kas akhir dan menutup shift milik sendiri.' },
+  { code: 'shifts.view', label: 'Lihat semua shift', group: 'Kasir & shift', description: 'Melihat histori shift kasir dan rekonsiliasi kas.' },
+  { code: 'shifts.manage', label: 'Kelola shift kasir', group: 'Kasir & shift', description: 'Meninjau dan menutup shift kasir sebagai admin dengan catatan audit.' },
+  { code: 'products.view', label: 'Lihat produk', group: 'Produk & stok', description: 'Melihat katalog dan stok produk.' },
+  { code: 'products.manage', label: 'Kelola produk', group: 'Produk & stok', description: 'Tambah, ubah, dan nonaktifkan produk.' },
+  { code: 'sales.view', label: 'Lihat riwayat penjualan', group: 'Transaksi', description: 'Melihat riwayat transaksi penjualan.' },
+  { code: 'wallet.view', label: 'Lihat saldo siswa', group: 'Dompet siswa', description: 'Melihat saldo akun siswa dan QR akun.' },
+  { code: 'wallet.topup', label: 'Top-up saldo', group: 'Dompet siswa', description: 'Menambah saldo siswa dengan audit transaksi.' },
+  { code: 'users.view', label: 'Lihat akun', group: 'Pengguna & akses', description: 'Melihat daftar akun pengguna.' },
+  { code: 'users.manage', label: 'Kelola akun', group: 'Pengguna & akses', description: 'Membuat akun, menonaktifkan akun, dan menerbitkan dan mencabut QR.' },
+  { code: 'roles.manage', label: 'Kelola role & izin', group: 'Pengguna & akses', description: 'Membuat role dan mengatur izin per checkbox.' },
+  { code: 'reports.view', label: 'Lihat laporan', group: 'Laporan', description: 'Melihat laporan harian, mingguan, dan bulanan.' },
+  { code: 'expenses.view', label: 'Lihat pengeluaran', group: 'Keuangan', description: 'Melihat daftar biaya operasional.' },
+  { code: 'expenses.manage', label: 'Catat pengeluaran', group: 'Keuangan', description: 'Mencatat biaya operasional kantin.' },
+  { code: 'stock.view', label: 'Lihat stok opname', group: 'Produk & stok', description: 'Melihat catatan stok opname.' },
+  { code: 'stock.manage', label: 'Catat stok opname', group: 'Produk & stok', description: 'Mencatat stok fisik dan menyesuaikan stok sistem.' },
+  { code: 'audit.view', label: 'Lihat audit log', group: 'Keamanan', description: 'Melihat aktivitas penting akun dan transaksi.' },
+  { code: 'settings.manage', label: 'Ubah pengaturan', group: 'Pengaturan', description: 'Mengubah pengaturan aplikasi yang tersedia.' },
+] as const;
+
+export type PermissionCode = typeof PERMISSIONS[number]['code'];

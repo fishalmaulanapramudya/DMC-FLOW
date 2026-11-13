@@ -1,0 +1,19 @@
+mmmmmmmmmmmmmmmmmmmmimport { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 5173,
+    host: '0.0.0.0',
+    // Mengizinkan sub-domain Cloudflare Tunnel agar tidak terkena "Blocked request"
+    allowedHosts:true,
+    // Browser calls /api on the same frontend origin; Vite forwards locally to Express.
+    proxy: { '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true } },
+  },
+  preview: {
+    port: 4173,
+    host: '127.0.0.1',
+  },
+})
+
