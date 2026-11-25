@@ -12,7 +12,7 @@ import {
   Fingerprint, Gauge, History, KeyRound, LayoutDashboard, LogOut, Menu, MoreHorizontal, Package,
   Plus, RefreshCw, Search, Settings, Shield, ShieldCheck, ShoppingBag, ShoppingCart, SlidersHorizontal,
   Smartphone, Sparkles, Tags, TrendingDown, TrendingUp, User, UserCog, UserPlus, Users, Wallet, X,
-  ScanBarcode, CircleAlert, LockKeyhole, Trash2, Pencil, RotateCcw, CheckCheck, QrCode, Camera, Clock3, Coins, WalletCards, Banknote
+  ScanBarcode, CircleAlert, LockKeyhole, Trash2, Pencil, RotateCcw, CheckCheck, QrCode, Camera, Clock3, Coins, WalletCards, Banknote, Printer
 } from 'lucide-vue-next'
 import { ApiError, get, post, patch, put } from './services/api'
 import BrandMark from './components/atoms/BrandMark.vue'
@@ -401,7 +401,7 @@ async function checkout() {
     cart.value = []; qrInput.value = ''; transactionPin.value = ''; paymentPinError.value = ''; qrAccount.value = null; skuInput.value = ''; scannerMessage.value = 'Pembayaran berhasil. Siap untuk transaksi berikutnya.'; cashReceived.value = 0
     if (paymentMethod.value === 'cash') notify(`Pembayaran tunai berhasil · kembalian ${money(result.sale.cashChange)}.`, 'success')
     else notify(`Pembayaran D-PAY berhasil · sisa saldo ${money(result.sale.balanceAfter)}.`, 'success')
-    await Promise.all([loadCurrentShift(), loadDashboardIfVisible()]); requestAnimationFrame(() => document.getElementById('sku-scanner')?.focus())
+    await Promise.all([loadCurrentShift(), loadDashboardIfVisible()]); await nextTick(); printReceipt(result.sale); requestAnimationFrame(() => document.getElementById('sku-scanner')?.focus())
   } catch (error) {
     if (error instanceof ApiError && error.status === 422 && /pin salah/i.test(error.message)) {
       // A wrong transaction PIN is a payment validation error, not an expired login session.
@@ -609,6 +609,21 @@ function exportReport() { const data = reportData.value?.summary || summary.valu
 function roleIcon(role: string) { return role === 'superadmin' ? ShieldCheck : role === 'admin' ? UserCog : role === 'kasir' ? ScanBarcode : User }
 function setPeriod(value: 'day' | 'week' | 'month') { period.value = value }
 
+function printReceipt(sale: any) {
+  if (!sale) { notify('Belum ada transaksi yang bisa dicetak.', 'error'); return }
+  const esc=(value:unknown)=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c))
+  const items=Array.isArray(sale.items)?sale.items:[]
+  const isCash=sale.paymentMethod==='cash'
+  const rows=items.map((item:any)=>`<tr><td>${esc(item.name)}<br/><small>${Number(item.qty)} x ${esc(money(item.unitPrice))}</small></td><td class="right">${esc(money(item.subtotal))}</td></tr>`).join('')
+  const payment=isCash?`<div class="line"><span>Tunai diterima</span><strong>${esc(money(sale.cashReceived))}</strong></div><div class="line"><span>Kembalian</span><strong>${esc(money(sale.cashChange))}</strong></div>`:`<div class="line"><span>Sisa saldo D-PAY</span><strong>${esc(money(sale.balanceAfter))}</strong></div>`
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Struk ${esc(sale.receiptNo)}</title><style>@page{size:80mm auto;margin:4mm}*{box-sizing:border-box}body{width:72mm;margin:auto;font-family:'Courier New',monospace;font-size:11px}.center{text-align:center}.brand{font-size:17px;font-weight:800}.dash{border-top:1px dashed #000;margin:8px 0}.meta{display:grid;grid-template-columns:1fr auto;gap:3px 8px}table{width:100%;border-collapse:collapse}.right{text-align:right;width:28mm}td{vertical-align:top;padding:3px 0}.line{display:flex;justify-content:space-between}</style></head><body><div class="center"><div class="brand">DMC FLOW</div><div>School Canteen</div></div><div class="dash"></div><div class="meta"><span>No. Transaksi</span><b>${esc(sale.receiptNo)}</b><span>Tanggal</span><span>${esc(dateTime(sale.createdAt))}</span><span>Kasir</span><span>${esc(sale.cashierName||user.value?.fullName||'-')}</span><span>Pembeli</span><span>${esc(sale.studentName||'Pembeli Tunai')}</span><span>Pembayaran</span><span>${isCash?'Tunai':'D-PAY'}</span></div><div class="dash"></div><table>${rows}</table><div class="dash"></div><div class="line"><span>TOTAL</span><strong>${esc(money(sale.total))}</strong></div>${payment}<div class="dash"></div><div class="center">Terima kasih<br/>Semoga berbelanja kembali</div></body></html>`
+  const frame=document.createElement('iframe');Object.assign(frame.style,{position:'fixed',right:'0',bottom:'0',width:'0',height:'0',border:'0'});document.body.appendChild(frame)
+  const doc=frame.contentWindow?.document;if(!doc){frame.remove();notify('Struk tidak dapat dibuat.','error');return}
+  frame.onload=()=>{try{frame.contentWindow?.focus();frame.contentWindow?.print()}finally{setTimeout(()=>frame.remove(),1000)}}
+  doc.open();doc.write(html);doc.close()
+}
+
+
 onMounted(() => {
   restoreSession()
   window.addEventListener('keydown', onPosScannerKeydown)
@@ -692,7 +707,7 @@ onMounted(() => {
                   <div v-else class="empty-cart"><div class="empty-cart-art"><ShoppingCart :size="30"/></div><strong>Keranjang masih kosong</strong><span>Scan SKU produk untuk memulai transaksi.</span><div class="empty-cart-samples"><span><ScanBarcode :size="13"/> SKU-001</span><span><ScanBarcode :size="13"/> SKU-002</span><span><ScanBarcode :size="13"/> SKU-003</span></div></div>
                   <div class="cart-summary" v-if="cart.length"><div><span>Jumlah item</span><strong>{{ cartQty }} pcs</strong></div><div><span>Subtotal</span><strong>{{ money(cartTotal) }}</strong></div><div class="total-row"><span>Total pembayaran</span><strong>{{ money(cartTotal) }}</strong></div></div>
                 </article>
-                <article v-if="lastReceipt" class="receipt-success"><div class="receipt-check"><CheckCheck :size="23"/></div><div class="receipt-copy"><strong>Pembayaran terakhir berhasil</strong><span>{{ lastReceipt.receiptNo }} · {{ lastReceipt.studentName || 'Pembeli tunai' }} · {{ dateTime(lastReceipt.createdAt) }}</span></div><div class="receipt-amount"><strong>{{ money(lastReceipt.total) }}</strong><span v-if="lastReceipt.paymentMethod==='cash'">Kembalian {{ money(lastReceipt.cashChange) }}</span><span v-else>Sisa saldo {{ money(lastReceipt.balanceAfter) }}</span></div></article>
+                <article v-if="lastReceipt" class="receipt-success"><div class="receipt-check"><CheckCheck :size="23"/></div><div class="receipt-copy"><strong>Pembayaran terakhir berhasil</strong><span>{{ lastReceipt.receiptNo }} · {{ lastReceipt.studentName || 'Pembeli tunai' }} · {{ dateTime(lastReceipt.createdAt) }}</span></div><div class="receipt-amount"><strong>{{ money(lastReceipt.total) }}</strong><span v-if="lastReceipt.paymentMethod==='cash'">Kembalian {{ money(lastReceipt.cashChange) }}</span><span v-else>Sisa saldo {{ money(lastReceipt.balanceAfter) }}</span></div><button class="btn btn-secondary btn-sm receipt-print" type="button" @click="printReceipt(lastReceipt)"><Printer :size="15"/> Cetak struk</button></article>
               </div>
               <div class="pos-side">
                 <article class="panel payment-panel"><div class="payment-header"><div class="payment-header-icon"><WalletCards :size="21"/></div><div><h3>Pembayaran</h3><p>Pilih metode sebelum menyelesaikan transaksi.</p></div></div>

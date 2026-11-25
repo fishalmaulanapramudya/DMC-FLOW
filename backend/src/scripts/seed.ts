@@ -78,7 +78,7 @@ async function main() {
       }
     }
   }
-  for (const product of products) await pool.query(`INSERT INTO products(sku,name,category,unit,price,stock,low_stock_threshold) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(sku) DO NOTHING`, product);
+  for (const product of products) await pool.query(`INSERT INTO products(sku,name,category,unit,price,stock,low_stock_threshold) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(sku) DO NOTHING`, [...product]);
   console.log('DMC FLOW / D-PAY database ready in schema dpay. Demo accounts: superadmin@dpay.local / SuperAdmin123!, kasir@dpay.local / Kasir123!, siswa@dpay.local / Siswa123!, guru@dpay.local / Guru123!. Demo transaction PIN for student/teacher: 4321.');
 }
 main().catch(error => { console.error('Database initialization failed:', error); process.exitCode = 1; }).finally(() => pool.end());

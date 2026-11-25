@@ -18,6 +18,9 @@ Project ini terdiri dari:
 - CRUD produk, stok, kategori, serta laporan penjualan
 - Role dan permission berdasarkan akses pengguna
 - Audit log dan keamanan dasar seperti JWT, bcrypt, CORS, rate limiting, dan helmet
+- Cetak struk thermal 80 mm setelah pembayaran tunai atau D-PAY
+- Cetak ulang struk dari riwayat pembayaran terakhir di halaman kasir
+- Ekspor daftar SKU produk beserta stok dan harga ke format Excel
 
 ## Stack teknologi
 
